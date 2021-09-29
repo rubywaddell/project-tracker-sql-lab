@@ -42,23 +42,72 @@ def make_new_student(first_name, last_name, github):
     Given a first name, last name, and GitHub account, add student to the
     database and print a confirmation message.
     """
-    pass
+    
+    QUERY = """
+        INSERT INTO students (first_name, last_name, github)
+        VALUES (:first_name, :last_name, :github)
+        """
+
+    db.session.execute(QUERY, {"first_name" : first_name, 
+                                "last_name" : last_name, 
+                                "github" : github})
+    
+    db.session.commit()
+
+    print(f"Added {first_name} {last_name} to the database.")
 
 
 def get_project_by_title(title):
     """Given a project title, print information about the project."""
-    pass
+    
+    QUERY = """ 
+        SELECT title, description, max_grade
+        FROM projects
+        WHERE title = :title
+    """
+
+    cursor = db.session.execute(QUERY, {"title" : title})
+
+    row = cursor.fetchone()
+
+    print(f"Project title: {row[0]}")
+    print(f"Description: {row[1]}")
+    print(f"Max grade: {row[2]}")
 
 
 def get_grade_by_github_title(github, title):
     """Print grade student received for a project."""
-    pass
+    
+    QUERY = """
+        SELECT grade
+        FROM grades
+        WHERE student_github = :github
+            AND project_title = :title
+    """
+    cursor = db.session.execute(QUERY, {'github': github, 'title': title})
+
+    row = cursor.fetchone()
+
+    print(f"Project '{title}' grade: {row[0]}")
 
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
-    pass
+    
+    QUERY = """
+        INSERT INTO grades (student_github, project_title, grade)
+        VALUES (:github, :title, :grade)        
+    """
 
+    db.session.execute(QUERY, {'github' : github,
+                                'title' : title,
+                                'grade' : grade})
+
+    db.session.commit()
+
+    print(f"Successfully added github: {github}")
+    print(f"Successfully added project: {title}")
+    print(f"Successfully added grade: {grade}")
 
 def handle_input():
     """Main loop.
@@ -91,7 +140,7 @@ def handle_input():
 if __name__ == "__main__":
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     # To be tidy, we close our database connection -- though,
     # since this is where our program ends, we'd quit anyway.
